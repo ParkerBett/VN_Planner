@@ -1,32 +1,1984 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VN Planner</title><style>
-:root{--bg:#f4f4f5;--card:#fff;--text:#18181b;--muted:#71717a;--border:#d4d4d8;--accent:#4f46e5}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}header{background:#18181b;color:white;padding:28px max(20px,calc((100% - 1000px)/2));position:sticky;top:0;z-index:5}header h1{margin:0 0 5px}header p{margin:0;color:#d4d4d8}main{max-width:1000px;margin:28px auto 70px;padding:0 20px}section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:18px}h2{margin:0 0 16px}label{display:block;font-weight:600;margin:14px 0 7px}input,textarea,select{width:100%;border:1px solid var(--border);border-radius:9px;padding:11px 12px;font:inherit;background:#fff}textarea{min-height:95px;resize:vertical}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;align-items:center}button{border:0;border-radius:9px;padding:11px 15px;font:inherit;font-weight:650;cursor:pointer;background:var(--accent);color:white}button.secondary{background:#e4e4e7;color:#18181b}button.danger{background:#dc2626}.status{color:var(--muted);font-size:14px;margin-left:auto}.item{border:1px solid var(--border);border-radius:11px;padding:16px;margin-top:12px;background:#fafafa}.item-title{display:flex;gap:10px;align-items:center}.item-title input{flex:1}.remove{background:#e4e4e7;color:#18181b}@media(max-width:700px){.grid{grid-template-columns:1fr}header{position:static}.status{width:100%;margin-left:0}}
-</style></head><body><header><h1>Visual Novel Planner</h1><p>Plan enough to make the VN — then keep changing the plan as you build.</p></header><main>
-<div class="actions"><button onclick="savePlan()">Save Plan</button><button class="secondary" onclick="loadPlan()">Load Plan</button><button class="secondary" onclick="exportPlan()">Export JSON</button><button class="secondary" onclick="document.getElementById('file').click()">Import JSON</button><button class="danger" onclick="clearPlan()">Clear</button><input id="file" type="file" accept=".json" hidden onchange="importPlan(event)"><span class="status" id="status">Autosaves in this browser</span></div>
-<section><h2>1. Project</h2><div class="grid"><div><label>Title</label><input data-key="project.title"></div><div><label>Working Title</label><input data-key="project.workingTitle"></div></div><label>One-sentence pitch</label><textarea data-key="project.pitch"></textarea><label>Core idea</label><textarea data-key="project.coreIdea"></textarea><label>What should the player feel?</label><textarea data-key="project.playerFeeling"></textarea><label>Genre / tone</label><input data-key="project.genreTone"></section>
-<section><h2>2. Story</h2><label>Central conflict</label><textarea data-key="story.conflict"></textarea><label>Beginning</label><textarea data-key="story.beginning"></textarea><label>Middle</label><textarea data-key="story.middle"></textarea><label>Major revelation(s)</label><textarea data-key="story.revelations"></textarea><label>Climax</label><textarea data-key="story.climax"></textarea><label>Ending</label><textarea data-key="story.ending"></textarea><label>What changes from beginning to end?</label><textarea data-key="story.change"></textarea></section>
-<section><h2>3. Protagonist</h2><div class="grid"><div><label>Name</label><input data-key="protagonist.name"></div><div><label>Age</label><input data-key="protagonist.age"></div></div><label>Personality</label><textarea data-key="protagonist.personality"></textarea><label>What do they want?</label><textarea data-key="protagonist.want"></textarea><label>What do they actually need?</label><textarea data-key="protagonist.need"></textarea><label>What are they afraid of?</label><textarea data-key="protagonist.fear"></textarea><label>How do they change?</label><textarea data-key="protagonist.change"></textarea></section>
-<section><h2>4. Characters</h2><div id="characters"></div><button onclick="addCharacter()">+ Add Character</button></section>
-<section><h2>5. Chapters</h2><div id="chapters"></div><button onclick="addChapter()">+ Add Chapter</button></section>
-<section><h2>6. Choices & Endings</h2><label>How much player choice is there?</label><select data-key="choices.amount"><option value="">Select...</option><option>Mostly linear</option><option>Some meaningful choices</option><option>Branching</option><option>Highly branching</option></select><label>Important choices</label><textarea data-key="choices.important"></textarea><label>Different endings?</label><textarea data-key="choices.endings"></textarea></section>
-<section><h2>7. World & Lore</h2><label>Setting</label><textarea data-key="world.setting"></textarea><label>Important locations</label><textarea data-key="world.locations"></textarea><label>Rules of the world</label><textarea data-key="world.rules"></textarea><label>Important lore / history</label><textarea data-key="world.lore"></textarea><label>Secrets the player should discover</label><textarea data-key="world.secrets"></textarea></section>
-<section><h2>8. Presentation</h2><div class="grid"><div><label>Visual style</label><input data-key="presentation.visual"></div><div><label>Music / audio style</label><input data-key="presentation.audio"></div></div><label>UI / special presentation ideas</label><textarea data-key="presentation.ui"></textarea><label>References / inspirations</label><textarea data-key="presentation.inspiration"></textarea></section>
-<section><h2>9. Development</h2><label>Engine / tools</label><input data-key="development.tools"><label>Must-have features</label><textarea data-key="development.mustHave"></textarea><label>Nice-to-have features</label><textarea data-key="development.niceToHave"></textarea><label>Things to avoid / scope limits</label><textarea data-key="development.scope"></textarea></section>
-<section><h2>10. Free Notes</h2><textarea data-key="notes" style="min-height:220px" placeholder="Anything that doesn't fit elsewhere..."></textarea></section></main>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VN Planner</title>
+
+<style>
+:root {
+    --bg: #f3f4f6;
+    --panel: #ffffff;
+    --text: #18181b;
+    --muted: #71717a;
+    --line: #d4d4d8;
+    --accent: #4f46e5;
+    --danger: #dc2626;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+header {
+    background: #18181b;
+    color: white;
+    padding: 24px max(18px, calc((100% - 1050px) / 2));
+}
+
+header h1 {
+    margin: 0;
+    font-size: 27px;
+}
+
+header p {
+    margin: 4px 0 0;
+    color: #d4d4d8;
+}
+
+main {
+    max-width: 1050px;
+    margin: 22px auto 70px;
+    padding: 0 18px;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+button {
+    border: 0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    background: var(--accent);
+    color: white;
+    font: inherit;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+button:hover {
+    filter: brightness(0.95);
+}
+
+button.secondary {
+    background: #e4e4e7;
+    color: #18181b;
+}
+
+button.danger {
+    background: var(--danger);
+}
+
+button.small {
+    padding: 7px 10px;
+    font-size: 13px;
+}
+
+.status {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+section {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    padding: 21px;
+    margin-bottom: 16px;
+}
+
+h2 {
+    margin: 0 0 15px;
+    font-size: 20px;
+}
+
+label {
+    display: block;
+    font-weight: 650;
+    margin: 13px 0 6px;
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 10px 11px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: white;
+    color: var(--text);
+    font: inherit;
+}
+
+textarea {
+    min-height: 95px;
+    resize: vertical;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.repeat {
+    border: 1px solid var(--line);
+    background: #fafafa;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 11px 0;
+}
+
+.repeat-head {
+    display: flex;
+    gap: 9px;
+    align-items: center;
+}
+
+.repeat-head input {
+    flex: 1;
+}
+
+.empty {
+    color: var(--muted);
+    padding: 12px 0;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Project dialog */
+
+dialog {
+    border: 0;
+    border-radius: 13px;
+    padding: 0;
+    width: min(560px, calc(100% - 30px));
+    box-shadow: 0 20px 60px #0004;
+}
+
+dialog::backdrop {
+    background: #0007;
+}
+
+.dialog-body {
+    padding: 20px;
+}
+
+.project-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border: 1px solid var(--line);
+    padding: 10px;
+    border-radius: 8px;
+    margin: 8px 0;
+}
+
+.project-row span {
+    flex: 1;
+}
+
+.project-row small {
+    color: var(--muted);
+}
+
+@media (max-width: 700px) {
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .status {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Visual Novel Planner</h1>
+    <p>Plan lightly, save projects, and keep building.</p>
+</header>
+
+<main>
+
+<div class="toolbar">
+
+    <button id="newBtn">
+        New Project
+    </button>
+
+    <button class="secondary" id="saveBtn">
+        Save Project
+    </button>
+
+    <button class="secondary" id="loadBtn">
+        Load Project
+    </button>
+
+    <button class="secondary" id="exportBtn">
+        Export JSON
+    </button>
+
+    <button class="secondary" id="importBtn">
+        Import JSON
+    </button>
+
+    <button class="danger" id="deleteBtn">
+        Delete Project
+    </button>
+
+    <input
+        id="fileInput"
+        type="file"
+        accept=".json,application/json"
+        class="hidden"
+    >
+
+    <span id="status" class="status">
+        No project loaded
+    </span>
+
+</div>
+
+
+<!-- PROJECT -->
+
+<section>
+
+<h2>1. Project</h2>
+
+<div class="grid">
+
+<div>
+<label>Title</label>
+<input data-path="project.title">
+</div>
+
+<div>
+<label>Working Title</label>
+<input data-path="project.workingTitle">
+</div>
+
+</div>
+
+<label>
+One-sentence pitch
+</label>
+
+<textarea
+    data-path="project.pitch"
+    placeholder="What is this VN?"
+></textarea>
+
+<label>
+Core idea
+</label>
+
+<textarea
+    data-path="project.coreIdea"
+></textarea>
+
+<label>
+Genre / tone
+</label>
+
+<input
+    data-path="project.genreTone"
+    placeholder="Mystery, horror, comedy, drama..."
+>
+
+<label>
+What should the player feel?
+</label>
+
+<textarea
+    data-path="project.playerFeeling"
+></textarea>
+
+</section>
+
+
+<!-- STORY -->
+
+<section>
+
+<h2>2. Story</h2>
+
+<label>Central conflict</label>
+<textarea data-path="story.conflict"></textarea>
+
+<label>Beginning</label>
+<textarea data-path="story.beginning"></textarea>
+
+<label>Middle</label>
+<textarea data-path="story.middle"></textarea>
+
+<label>Major revelations</label>
+<textarea data-path="story.revelations"></textarea>
+
+<label>Climax</label>
+<textarea data-path="story.climax"></textarea>
+
+<label>Ending</label>
+<textarea data-path="story.ending"></textarea>
+
+<label>
+What changes from beginning to end?
+</label>
+
+<textarea data-path="story.change"></textarea>
+
+</section>
+
+
+<!-- PROTAGONIST -->
+
+<section>
+
+<h2>3. Protagonist</h2>
+
+<div class="grid">
+
+<div>
+<label>Name</label>
+<input data-path="protagonist.name">
+</div>
+
+<div>
+<label>Age</label>
+<input data-path="protagonist.age">
+</div>
+
+</div>
+
+<label>Personality</label>
+<textarea data-path="protagonist.personality"></textarea>
+
+<label>What do they want?</label>
+<textarea data-path="protagonist.want"></textarea>
+
+<label>What do they actually need?</label>
+<textarea data-path="protagonist.need"></textarea>
+
+<label>What are they afraid of?</label>
+<textarea data-path="protagonist.fear"></textarea>
+
+<label>How do they change?</label>
+<textarea data-path="protagonist.change"></textarea>
+
+</section>
+
+
+<!-- CHARACTERS -->
+
+<section>
+
+<h2>4. Characters</h2>
+
+<div id="characters"></div>
+
+<button
+    id="addCharacter"
+    class="secondary"
+>
+    + Add Character
+</button>
+
+</section>
+
+
+<!-- CHAPTERS -->
+
+<section>
+
+<h2>5. Chapters</h2>
+
+<div id="chapters"></div>
+
+<button
+    id="addChapter"
+    class="secondary"
+>
+    + Add Chapter
+</button>
+
+</section>
+
+
+<!-- CHOICES -->
+
+<section>
+
+<h2>6. Choices & Endings</h2>
+
+<label>
+Amount of player choice
+</label>
+
+<select data-path="choices.amount">
+
+<option value="">
+Select...
+</option>
+
+<option>
+Mostly linear
+</option>
+
+<option>
+Some meaningful choices
+</option>
+
+<option>
+Branching
+</option>
+
+<option>
+Highly branching
+</option>
+
+</select>
+
+<label>
+Important choices
+</label>
+
+<textarea
+    data-path="choices.important"
+></textarea>
+
+<label>
+Different endings
+</label>
+
+<textarea
+    data-path="choices.endings"
+></textarea>
+
+</section>
+
+
+<!-- WORLD -->
+
+<section>
+
+<h2>7. World & Lore</h2>
+
+<label>Setting</label>
+<textarea data-path="world.setting"></textarea>
+
+<label>Important locations</label>
+<textarea data-path="world.locations"></textarea>
+
+<label>Rules of the world</label>
+<textarea data-path="world.rules"></textarea>
+
+<label>Important lore / history</label>
+<textarea data-path="world.lore"></textarea>
+
+<label>
+Secrets the player discovers
+</label>
+
+<textarea data-path="world.secrets"></textarea>
+
+</section>
+
+
+<!-- PRESENTATION -->
+
+<section>
+
+<h2>8. Presentation</h2>
+
+<div class="grid">
+
+<div>
+<label>Visual style</label>
+<input data-path="presentation.visual">
+</div>
+
+<div>
+<label>Music / audio style</label>
+<input data-path="presentation.audio">
+</div>
+
+</div>
+
+<label>
+UI / special presentation
+</label>
+
+<textarea data-path="presentation.ui"></textarea>
+
+<label>
+References / inspirations
+</label>
+
+<textarea data-path="presentation.inspiration"></textarea>
+
+</section>
+
+
+<!-- DEVELOPMENT -->
+
+<section>
+
+<h2>9. Development</h2>
+
+<label>
+Engine / tools
+</label>
+
+<input data-path="development.tools">
+
+<label>
+Must-have features
+</label>
+
+<textarea data-path="development.mustHave"></textarea>
+
+<label>
+Nice-to-have features
+</label>
+
+<textarea data-path="development.niceToHave"></textarea>
+
+<label>
+Things to avoid / scope limits
+</label>
+
+<textarea data-path="development.scope"></textarea>
+
+</section>
+
+
+<!-- NOTES -->
+
+<section>
+
+<h2>10. Free Notes</h2>
+
+<textarea
+    data-path="notes"
+    style="min-height:220px"
+    placeholder="Anything else..."
+></textarea>
+
+</section>
+
+</main>
+
+
+<!-- LOAD PROJECT DIALOG -->
+
+<dialog id="projectsDialog">
+
+<div class="dialog-body">
+
+<h2>
+Load Project
+</h2>
+
+<div id="projectList"></div>
+
+<button
+    class="secondary"
+    onclick="projectsDialog.close()"
+>
+Cancel
+</button>
+
+</div>
+
+</dialog>
+
+
 <script>
-const KEY='vn-planner-v1';
-const fields=()=>[...document.querySelectorAll('[data-key]')];
-const esc=s=>String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
-function get(o,k){return k.split('.').reduce((x,p)=>x?.[p],'')??''}
-function collect(){let d={};fields().forEach(e=>{let p=e.dataset.key.split('.'),o=d;p.forEach((k,i)=>i===p.length-1?o[k]=e.value:o=o[k]||={})});d.characters=[...document.querySelectorAll('#characters .item')].map(x=>Object.fromEntries(['name','role','personality','want','fear','relationship','arc'].map(k=>[k,x.querySelector('[data-field="'+k+'"]').value])));d.chapters=[...document.querySelectorAll('#chapters .item')].map(x=>Object.fromEntries(['title','purpose','events','choices','ending'].map(k=>[k,x.querySelector('[data-field="'+k+'"]').value])));return d}
-function fill(d){fields().forEach(e=>e.value=get(d,e.dataset.key));document.getElementById('characters').innerHTML='';(d.characters||[]).forEach(addCharacter);document.getElementById('chapters').innerHTML='';(d.chapters||[]).forEach(addChapter);bind()}
-function addCharacter(d={}){let x=document.createElement('div');x.className='item';x.innerHTML='<div class="item-title"><input data-field="name" placeholder="Character name" value="'+esc(d.name)+'"><button class="remove" onclick="this.closest(\'.item\').remove();autoSave()">Remove</button></div><div class="grid"><div><label>Role</label><input data-field="role" value="'+esc(d.role)+'"></div><div><label>Personality</label><input data-field="personality" value="'+esc(d.personality)+'"></div></div><div class="grid"><div><label>What do they want?</label><textarea data-field="want">'+esc(d.want)+'</textarea></div><div><label>What are they afraid of?</label><textarea data-field="fear">'+esc(d.fear)+'</textarea></div></div><label>Relationship to protagonist</label><textarea data-field="relationship">'+esc(d.relationship)+'</textarea><label>Character arc / change</label><textarea data-field="arc">'+esc(d.arc)+'</textarea>';document.getElementById('characters').appendChild(x);bind()}
-function addChapter(d={}){let x=document.createElement('div');x.className='item';x.innerHTML='<div class="item-title"><input data-field="title" placeholder="Chapter title / number" value="'+esc(d.title)+'"><button class="remove" onclick="this.closest(\'.item\').remove();autoSave()">Remove</button></div><label>Purpose of this chapter</label><textarea data-field="purpose">'+esc(d.purpose)+'</textarea><label>Major events</label><textarea data-field="events">'+esc(d.events)+'</textarea><label>Choices / player interaction</label><textarea data-field="choices">'+esc(d.choices)+'</textarea><label>How does it end / lead into the next chapter?</label><textarea data-field="ending">'+esc(d.ending)+'</textarea>';document.getElementById('chapters').appendChild(x);bind()}
-function storageAvailable(){try{const t="__vn_planner_test__";localStorage.setItem(t,"1");localStorage.removeItem(t);return true}catch(e){return false}}
-function savePlan(){try{if(!storageAvailable()){alert("Browser storage is unavailable for this file. Use Export JSON to save your plan.");return false}localStorage.setItem(KEY,JSON.stringify(collect()));document.getElementById('status').textContent='Saved locally • '+new Date().toLocaleTimeString();return true}catch(e){console.error(e);alert("The plan could not be saved. Use Export JSON instead.");return false}}
-function autoSave(){clearTimeout(window._t);window._t=setTimeout(savePlan,300)}
-function loadPlan(){try{if(!storageAvailable()){alert("Browser storage is unavailable for this file. Use Import JSON to load a saved plan.");return false}const raw=localStorage.getItem(KEY);if(!raw){alert("No saved plan was found in this browser.");return false}fill(JSON.parse(raw));document.getElementById('status').textContent='Loaded locally • '+new Date().toLocaleTimeString();return true}catch(e){console.error(e);alert("The saved plan could not be loaded. Use Import JSON instead.");return false}}
-function clearPlan(){if(confirm('Clear the current plan and browser save?')){localStorage.removeItem(KEY);location.reload()}}
-function exportPlan(){let b=new Blob([JSON.stringify(collect(),null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='VN-Plan.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function importPlan(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{fill(JSON.parse(r.result));savePlan()}catch{alert('Invalid VN Planner JSON file.')}};r.readAsText(f)}
-function bind(){document.querySelectorAll('input,textarea,select').forEach(e=>e.oninput=autoSave)}bind();loadPlan();
-</script></body></html>
+
+/*
+=========================================================
+DATABASE
+=========================================================
+*/
+
+const DB_NAME = "VNPlannerDB";
+const DB_VERSION = 1;
+const STORE_NAME = "projects";
+
+let db = null;
+let currentProjectId = null;
+let autosaveTimer = null;
+
+
+/*
+=========================================================
+OPEN DATABASE
+=========================================================
+*/
+
+function openDatabase() {
+
+    return new Promise((resolve, reject) => {
+
+        const request =
+            indexedDB.open(DB_NAME, DB_VERSION);
+
+        request.onupgradeneeded = function(event) {
+
+            const database = event.target.result;
+
+            if (!database.objectStoreNames.contains(STORE_NAME)) {
+
+                database.createObjectStore(
+                    STORE_NAME,
+                    {
+                        keyPath: "id"
+                    }
+                );
+
+            }
+
+        };
+
+        request.onsuccess = function(event) {
+
+            db = event.target.result;
+
+            resolve(db);
+
+        };
+
+        request.onerror = function() {
+
+            reject(request.error);
+
+        };
+
+    });
+
+}
+
+
+/*
+=========================================================
+DATABASE TRANSACTION
+=========================================================
+*/
+
+function store(mode) {
+
+    return db
+        .transaction(STORE_NAME, mode)
+        .objectStore(STORE_NAME);
+
+}
+
+
+/*
+=========================================================
+GENERATE ID
+=========================================================
+*/
+
+function generateId() {
+
+    if (crypto.randomUUID) {
+
+        return crypto.randomUUID();
+
+    }
+
+    return Date.now() + "-" + Math.random();
+
+}
+
+
+/*
+=========================================================
+PATH HELPERS
+=========================================================
+*/
+
+function getValue(object, path) {
+
+    return path
+        .split(".")
+        .reduce(
+            (current, key) => current?.[key],
+            object
+        ) ?? "";
+
+}
+
+
+function setValue(object, path, value) {
+
+    const parts = path.split(".");
+
+    let current = object;
+
+    parts.forEach((part, index) => {
+
+        if (index === parts.length - 1) {
+
+            current[part] = value;
+
+        } else {
+
+            if (!current[part]) {
+
+                current[part] = {};
+
+            }
+
+            current = current[part];
+
+        }
+
+    });
+
+}
+
+
+/*
+=========================================================
+HTML ESCAPE
+=========================================================
+*/
+
+function escapeHTML(value) {
+
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+
+}
+
+
+/*
+=========================================================
+COLLECT FORM
+=========================================================
+*/
+
+function collectProject() {
+
+    const data = {
+
+        project: {},
+        story: {},
+        protagonist: {},
+        choices: {},
+        world: {},
+        presentation: {},
+        development: {},
+        notes: ""
+
+    };
+
+
+    document
+        .querySelectorAll("[data-path]")
+        .forEach(element => {
+
+            setValue(
+                data,
+                element.dataset.path,
+                element.value
+            );
+
+        });
+
+
+    /*
+    CHARACTERS
+    */
+
+    data.characters =
+        [...document.querySelectorAll("#characters .repeat")]
+        .map(element => {
+
+            return {
+
+                name:
+                    element.querySelector(
+                        '[data-field="name"]'
+                    ).value,
+
+                role:
+                    element.querySelector(
+                        '[data-field="role"]'
+                    ).value,
+
+                personality:
+                    element.querySelector(
+                        '[data-field="personality"]'
+                    ).value,
+
+                want:
+                    element.querySelector(
+                        '[data-field="want"]'
+                    ).value,
+
+                fear:
+                    element.querySelector(
+                        '[data-field="fear"]'
+                    ).value,
+
+                relationship:
+                    element.querySelector(
+                        '[data-field="relationship"]'
+                    ).value,
+
+                arc:
+                    element.querySelector(
+                        '[data-field="arc"]'
+                    ).value
+
+            };
+
+        });
+
+
+    /*
+    CHAPTERS
+    */
+
+    data.chapters =
+        [...document.querySelectorAll("#chapters .repeat")]
+        .map(element => {
+
+            return {
+
+                title:
+                    element.querySelector(
+                        '[data-field="title"]'
+                    ).value,
+
+                purpose:
+                    element.querySelector(
+                        '[data-field="purpose"]'
+                    ).value,
+
+                events:
+                    element.querySelector(
+                        '[data-field="events"]'
+                    ).value,
+
+                choices:
+                    element.querySelector(
+                        '[data-field="choices"]'
+                    ).value,
+
+                ending:
+                    element.querySelector(
+                        '[data-field="ending"]'
+                    ).value
+
+            };
+
+        });
+
+
+    return data;
+
+}
+
+
+/*
+=========================================================
+FILL FORM
+=========================================================
+*/
+
+function fillProject(data) {
+
+    document
+        .querySelectorAll("[data-path]")
+        .forEach(element => {
+
+            element.value =
+                getValue(
+                    data,
+                    element.dataset.path
+                );
+
+        });
+
+
+    /*
+    CHARACTERS
+    */
+
+    const characters =
+        document.getElementById("characters");
+
+    characters.innerHTML = "";
+
+
+    (data.characters || [])
+        .forEach(character => {
+
+            addCharacter(character);
+
+        });
+
+
+    /*
+    CHAPTERS
+    */
+
+    const chapters =
+        document.getElementById("chapters");
+
+    chapters.innerHTML = "";
+
+
+    (data.chapters || [])
+        .forEach(chapter => {
+
+            addChapter(chapter);
+
+        });
+
+
+    bindAutosave();
+
+}
+
+
+/*
+=========================================================
+ADD CHARACTER
+=========================================================
+*/
+
+function addCharacter(data = {}) {
+
+    const element =
+        document.createElement("div");
+
+    element.className = "repeat";
+
+
+    element.innerHTML = `
+
+        <div class="repeat-head">
+
+            <input
+                data-field="name"
+                placeholder="Character name"
+                value="${escapeHTML(data.name)}"
+            >
+
+            <button
+                class="small danger remove-character"
+            >
+                Remove
+            </button>
+
+        </div>
+
+
+        <div class="grid">
+
+            <div>
+
+                <label>
+                    Role
+                </label>
+
+                <input
+                    data-field="role"
+                    value="${escapeHTML(data.role)}"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Personality
+                </label>
+
+                <input
+                    data-field="personality"
+                    value="${escapeHTML(data.personality)}"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="grid">
+
+            <div>
+
+                <label>
+                    What do they want?
+                </label>
+
+                <textarea
+                    data-field="want"
+                >${escapeHTML(data.want)}</textarea>
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    What are they afraid of?
+                </label>
+
+                <textarea
+                    data-field="fear"
+                >${escapeHTML(data.fear)}</textarea>
+
+            </div>
+
+        </div>
+
+
+        <label>
+            Relationship to protagonist
+        </label>
+
+        <textarea
+            data-field="relationship"
+        >${escapeHTML(data.relationship)}</textarea>
+
+
+        <label>
+            Character arc / change
+        </label>
+
+        <textarea
+            data-field="arc"
+        >${escapeHTML(data.arc)}</textarea>
+
+    `;
+
+
+    element
+        .querySelector(".remove-character")
+        .onclick = function() {
+
+            element.remove();
+
+            scheduleAutosave();
+
+        };
+
+
+    document
+        .getElementById("characters")
+        .appendChild(element);
+
+}
+
+
+/*
+=========================================================
+ADD CHAPTER
+=========================================================
+*/
+
+function addChapter(data = {}) {
+
+    const element =
+        document.createElement("div");
+
+    element.className = "repeat";
+
+
+    element.innerHTML = `
+
+        <div class="repeat-head">
+
+            <input
+                data-field="title"
+                placeholder="Chapter title / number"
+                value="${escapeHTML(data.title)}"
+            >
+
+            <button
+                class="small danger remove-chapter"
+            >
+                Remove
+            </button>
+
+        </div>
+
+
+        <label>
+            Purpose of this chapter
+        </label>
+
+        <textarea
+            data-field="purpose"
+        >${escapeHTML(data.purpose)}</textarea>
+
+
+        <label>
+            Major events
+        </label>
+
+        <textarea
+            data-field="events"
+        >${escapeHTML(data.events)}</textarea>
+
+
+        <label>
+            Choices / player interaction
+        </label>
+
+        <textarea
+            data-field="choices"
+        >${escapeHTML(data.choices)}</textarea>
+
+
+        <label>
+            How does it end / lead onward?
+        </label>
+
+        <textarea
+            data-field="ending"
+        >${escapeHTML(data.ending)}</textarea>
+
+    `;
+
+
+    element
+        .querySelector(".remove-chapter")
+        .onclick = function() {
+
+            element.remove();
+
+            scheduleAutosave();
+
+        };
+
+
+    document
+        .getElementById("chapters")
+        .appendChild(element);
+
+}
+
+
+/*
+=========================================================
+PROJECT RECORD
+=========================================================
+*/
+
+function createProjectRecord() {
+
+    const data =
+        collectProject();
+
+
+    return {
+
+        id:
+            currentProjectId ||
+            generateId(),
+
+        name:
+            data.project.title ||
+            data.project.workingTitle ||
+            "Untitled VN",
+
+        updated:
+            new Date().toISOString(),
+
+        data:
+            data
+
+    };
+
+}
+
+
+/*
+=========================================================
+SAVE PROJECT
+=========================================================
+*/
+
+function saveProject(showMessage = true) {
+
+    return new Promise((resolve, reject) => {
+
+        if (!db) {
+
+            reject(
+                new Error("Database unavailable")
+            );
+
+            return;
+
+        }
+
+
+        if (!currentProjectId) {
+
+            currentProjectId =
+                generateId();
+
+        }
+
+
+        const record =
+            createProjectRecord();
+
+
+        record.id =
+            currentProjectId;
+
+
+        const request =
+            store("readwrite").put(record);
+
+
+        request.onsuccess = function() {
+
+            if (showMessage) {
+
+                setStatus(
+                    "Saved • " +
+                    new Date().toLocaleTimeString()
+                );
+
+            } else {
+
+                setStatus(
+                    "Autosaved • " +
+                    new Date().toLocaleTimeString()
+                );
+
+            }
+
+
+            resolve();
+
+        };
+
+
+        request.onerror = function() {
+
+            setStatus("Save failed");
+
+            reject(request.error);
+
+        };
+
+    });
+
+}
+
+
+/*
+=========================================================
+AUTOSAVE
+=========================================================
+*/
+
+function scheduleAutosave() {
+
+    clearTimeout(autosaveTimer);
+
+
+    autosaveTimer =
+        setTimeout(
+            function() {
+
+                if (currentProjectId) {
+
+                    saveProject(false);
+
+                }
+
+            },
+            600
+        );
+
+}
+
+
+/*
+=========================================================
+LOAD ONE PROJECT
+=========================================================
+*/
+
+function loadProject(id) {
+
+    return new Promise((resolve, reject) => {
+
+        const request =
+            store("readonly").get(id);
+
+
+        request.onsuccess =
+            function() {
+
+                const record =
+                    request.result;
+
+
+                if (!record) {
+
+                    alert(
+                        "Project could not be found."
+                    );
+
+                    return;
+
+                }
+
+
+                currentProjectId =
+                    record.id;
+
+
+                fillProject(
+                    record.data
+                );
+
+
+                setStatus(
+                    "Loaded • " +
+                    record.name
+                );
+
+
+                resolve();
+
+            };
+
+
+        request.onerror =
+            function() {
+
+                reject(request.error);
+
+            };
+
+    });
+
+}
+
+
+/*
+=========================================================
+GET ALL PROJECTS
+=========================================================
+*/
+
+function getProjects() {
+
+    return new Promise((resolve, reject) => {
+
+        const request =
+            store("readonly").getAll();
+
+
+        request.onsuccess =
+            function() {
+
+                const projects =
+                    request.result.sort(
+                        (a, b) =>
+                            b.updated.localeCompare(
+                                a.updated
+                            )
+                    );
+
+
+                resolve(projects);
+
+            };
+
+
+        request.onerror =
+            function() {
+
+                reject(request.error);
+
+            };
+
+    });
+
+}
+
+
+/*
+=========================================================
+LOAD PROJECT DIALOG
+=========================================================
+*/
+
+async function showProjects() {
+
+    const projects =
+        await getProjects();
+
+
+    const list =
+        document.getElementById(
+            "projectList"
+        );
+
+
+    list.innerHTML = "";
+
+
+    if (projects.length === 0) {
+
+        list.innerHTML =
+            '<div class="empty">No saved projects yet.</div>';
+
+    }
+
+
+    projects.forEach(project => {
+
+        const row =
+            document.createElement("div");
+
+        row.className =
+            "project-row";
+
+
+        row.innerHTML = `
+
+            <span>
+
+                <b>
+                    ${escapeHTML(project.name)}
+                </b>
+
+                <br>
+
+                <small>
+                    ${escapeHTML(
+                        new Date(
+                            project.updated
+                        ).toLocaleString()
+                    )}
+                </small>
+
+            </span>
+
+
+            <button
+                class="small load-project"
+            >
+                Load
+            </button>
+
+        `;
+
+
+        row
+            .querySelector(".load-project")
+            .onclick =
+            async function() {
+
+                await loadProject(
+                    project.id
+                );
+
+                document
+                    .getElementById(
+                        "projectsDialog"
+                    )
+                    .close();
+
+            };
+
+
+        list.appendChild(row);
+
+    });
+
+
+    document
+        .getElementById(
+            "projectsDialog"
+        )
+        .showModal();
+
+}
+
+
+/*
+=========================================================
+NEW PROJECT
+=========================================================
+*/
+
+function newProject() {
+
+    const hasContent =
+        JSON.stringify(
+            collectProject()
+        ) !==
+        JSON.stringify({
+            project:{},
+            story:{},
+            protagonist:{},
+            choices:{},
+            world:{},
+            presentation:{},
+            development:{},
+            notes:"",
+            characters:[],
+            chapters:[]
+        });
+
+
+    if (
+        hasContent &&
+        !confirm(
+            "Start a new project? Unsaved changes will be lost."
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    currentProjectId =
+        generateId();
+
+
+    fillProject({});
+
+
+    setStatus(
+        "New project • not saved"
+    );
+
+}
+
+
+/*
+=========================================================
+DELETE PROJECT
+=========================================================
+*/
+
+function deleteProject() {
+
+    if (!currentProjectId) {
+
+        alert(
+            "No saved project is currently loaded."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !confirm(
+            "Delete this saved project?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const request =
+        store("readwrite")
+            .delete(
+                currentProjectId
+            );
+
+
+    request.onsuccess =
+        function() {
+
+            currentProjectId = null;
+
+            fillProject({});
+
+            setStatus(
+                "Project deleted"
+            );
+
+        };
+
+}
+
+
+/*
+=========================================================
+EXPORT JSON
+=========================================================
+*/
+
+function exportJSON() {
+
+    const data =
+        collectProject();
+
+
+    const packageData = {
+
+        format:
+            "VN-Planner",
+
+        version:
+            1,
+
+        exported:
+            new Date().toISOString(),
+
+        data:
+            data
+
+    };
+
+
+    const json =
+        JSON.stringify(
+            packageData,
+            null,
+            2
+        );
+
+
+    const blob =
+        new Blob(
+            [json],
+            {
+                type:
+                    "application/json"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const link =
+        document.createElement("a");
+
+
+    const name =
+        (
+            data.project.title ||
+            data.project.workingTitle ||
+            "VN-Project"
+        )
+        .replace(
+            /[^\w -]/g,
+            "_"
+        );
+
+
+    link.href = url;
+
+    link.download =
+        name + ".json";
+
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+
+    setTimeout(
+        () => URL.revokeObjectURL(url),
+        1000
+    );
+
+
+    setStatus(
+        "JSON exported"
+    );
+
+}
+
+
+/*
+=========================================================
+IMPORT JSON
+=========================================================
+*/
+
+function importJSON(file) {
+
+    const reader =
+        new FileReader();
+
+
+    reader.onload =
+        async function() {
+
+            try {
+
+                const parsed =
+                    JSON.parse(
+                        reader.result
+                    );
+
+
+                const data =
+                    parsed.data ||
+                    parsed;
+
+
+                currentProjectId =
+                    generateId();
+
+
+                fillProject(data);
+
+
+                await saveProject(false);
+
+
+                setStatus(
+                    "Imported • saved as new project"
+                );
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                alert(
+                    "That file is not a valid VN Planner JSON file."
+                );
+
+            }
+
+        };
+
+
+    reader.readAsText(file);
+
+}
+
+
+/*
+=========================================================
+STATUS
+=========================================================
+*/
+
+function setStatus(text) {
+
+    document
+        .getElementById(
+            "status"
+        )
+        .textContent = text;
+
+}
+
+
+/*
+=========================================================
+AUTOSAVE BINDING
+=========================================================
+*/
+
+function bindAutosave() {
+
+    document
+        .querySelectorAll(
+            "input, textarea, select"
+        )
+        .forEach(
+            element => {
+
+                element.oninput =
+                    scheduleAutosave;
+
+                element.onchange =
+                    scheduleAutosave;
+
+            }
+        );
+
+}
+
+
+/*
+=========================================================
+BUTTONS
+=========================================================
+*/
+
+document
+    .getElementById("newBtn")
+    .onclick =
+    newProject;
+
+
+document
+    .getElementById("saveBtn")
+    .onclick =
+    () => saveProject(true);
+
+
+document
+    .getElementById("loadBtn")
+    .onclick =
+    showProjects;
+
+
+document
+    .getElementById("deleteBtn")
+    .onclick =
+    deleteProject;
+
+
+document
+    .getElementById("exportBtn")
+    .onclick =
+    exportJSON;
+
+
+document
+    .getElementById("importBtn")
+    .onclick =
+    () =>
+        document
+            .getElementById("fileInput")
+            .click();
+
+
+document
+    .getElementById("fileInput")
+    .onchange =
+    function(event) {
+
+        const file =
+            event.target.files[0];
+
+
+        if (file) {
+
+            importJSON(file);
+
+        }
+
+
+        event.target.value = "";
+
+    };
+
+
+document
+    .getElementById("addCharacter")
+    .onclick =
+    function() {
+
+        addCharacter();
+
+        scheduleAutosave();
+
+    };
+
+
+document
+    .getElementById("addChapter")
+    .onclick =
+    function() {
+
+        addChapter();
+
+        scheduleAutosave();
+
+    };
+
+
+/*
+=========================================================
+INITIALIZE
+=========================================================
+*/
+
+async function initialize() {
+
+    try {
+
+        await openDatabase();
+
+
+        bindAutosave();
+
+
+        setStatus(
+            "Ready • browser database enabled"
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "IndexedDB initialization failed:",
+            error
+        );
+
+
+        setStatus(
+            "Browser database unavailable"
+        );
+
+
+        alert(
+            "This browser is blocking IndexedDB on this site. " +
+            "JSON Export/Import will still work."
+        );
+
+    }
+
+}
+
+
+initialize();
+
+</script>
+
+</body>
+</html>
