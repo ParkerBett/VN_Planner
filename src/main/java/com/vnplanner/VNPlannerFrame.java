@@ -98,6 +98,8 @@ public class VNPlannerFrame extends JFrame {
 
     // Free notes
     private JTextArea freeNotesArea = new JTextArea(10,60);
+    // Autosave timer
+    private javax.swing.Timer autosaveTimer;
 
     public VNPlannerFrame() {
         super("Visual Novel Planner");
@@ -109,6 +111,34 @@ public class VNPlannerFrame extends JFrame {
         // Initialize styled components
         initStyledComponents();
         initTabs();
+        // start autosave timer (30 seconds)
+        autosaveTimer = new javax.swing.Timer(30_000, e -> runAutosave());
+        autosaveTimer.setRepeats(true);
+        autosaveTimer.start();
+        // stop timer on close
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                if (autosaveTimer != null) autosaveTimer.stop();
+            }
+        });
+    }
+
+    private void runAutosave() {
+        // perform a silent autosave: if there's a currentFile, save to it; otherwise save to temp
+        try {
+            updateProjectFromUI();
+            if (currentFile != null) {
+                ProjectIO.saveAsVnproj(currentFile, project);
+                System.out.println("[Autosave] Saved to " + currentFile.getAbsolutePath());
+            } else {
+                String tmp = System.getProperty("java.io.tmpdir");
+                File f = new File(tmp, "vnplanner_autosave.vnproj");
+                ProjectIO.saveAsVnproj(f, project);
+                System.out.println("[Autosave] Saved to temp " + f.getAbsolutePath());
+            }
+        } catch (Exception ex) {
+            System.err.println("[Autosave] failed: " + ex.getMessage());
+        }
     }
 
     private void initStyledComponents() {
