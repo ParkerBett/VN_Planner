@@ -34,6 +34,8 @@ public class Project {
     // Characters and Chapters
     private List<CharacterData> characters = new ArrayList<>();
     private List<Chapter> chapters = new ArrayList<>();
+    private List<Relationship> relationships = new ArrayList<>();
+    private List<TimelineEntry> timeline = new ArrayList<>();
 
     // Choices & Endings
     private String amountOfChoice = "";
@@ -49,6 +51,7 @@ public class Project {
     private String worldRules = "";
     private String loreHistory = "";
     private String secrets = "";
+    private List<WorldLocation> locations = new ArrayList<>();
 
     // Presentation
     private String visualStyle = "";
@@ -57,7 +60,8 @@ public class Project {
     private String inspirations = "";
 
     // Development
-    private String engineTools = "";
+    private String engine = "";
+    private String tools = "";
     private String mustHave = "";
     private String niceToHave = "";
     private String scopeLimits = "";
@@ -115,6 +119,14 @@ public class Project {
     public void setCharacters(List<CharacterData> characters) { this.characters = characters; }
     public List<Chapter> getChapters() { return chapters; }
     public void setChapters(List<Chapter> chapters) { this.chapters = chapters; }
+    public List<Relationship> getRelationships() { return relationships; }
+    public void setRelationships(List<Relationship> relationships) {
+        this.relationships = relationships == null ? new ArrayList<>() : relationships;
+    }
+    public List<TimelineEntry> getTimeline() { return timeline; }
+    public void setTimeline(List<TimelineEntry> timeline) {
+        this.timeline = timeline == null ? new ArrayList<>() : timeline;
+    }
 
     public String getAmountOfChoice() { return amountOfChoice; }
     public void setAmountOfChoice(String amountOfChoice) { this.amountOfChoice = amountOfChoice; }
@@ -140,6 +152,8 @@ public class Project {
     public void setLoreHistory(String loreHistory) { this.loreHistory = loreHistory; }
     public String getSecrets() { return secrets; }
     public void setSecrets(String secrets) { this.secrets = secrets; }
+    public List<WorldLocation> getLocations() { return locations; }
+    public void setLocations(List<WorldLocation> locations) { this.locations = locations == null ? new ArrayList<>() : locations; }
 
     public String getVisualStyle() { return visualStyle; }
     public void setVisualStyle(String visualStyle) { this.visualStyle = visualStyle; }
@@ -150,8 +164,10 @@ public class Project {
     public String getInspirations() { return inspirations; }
     public void setInspirations(String inspirations) { this.inspirations = inspirations; }
 
-    public String getEngineTools() { return engineTools; }
-    public void setEngineTools(String engineTools) { this.engineTools = engineTools; }
+    public String getEngine() { return engine; }
+    public void setEngine(String engine) { this.engine = engine; }
+    public String getTools() { return tools; }
+    public void setTools(String tools) { this.tools = tools; }
     public String getMustHave() { return mustHave; }
     public void setMustHave(String mustHave) { this.mustHave = mustHave; }
     public String getNiceToHave() { return niceToHave; }

@@ -17,7 +17,8 @@ public class ProjectIO {
         try (FileOutputStream fos = new FileOutputStream(file);
              ZipOutputStream zos = new ZipOutputStream(fos)) {
             zos.putNextEntry(new ZipEntry(ENTRY_NAME));
-            mapper.writerWithDefaultPrettyPrinter().writeValue(zos, project);
+            byte[] json = mapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(project);
+            zos.write(json);
             zos.closeEntry();
         }
     }

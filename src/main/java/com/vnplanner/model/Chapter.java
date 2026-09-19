@@ -1,11 +1,15 @@
 package com.vnplanner.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Chapter {
     private String title = "";
     private String purpose = "";
     private String majorEvents = "";
     private String choices = "";
     private String endingLead = "";
+    private List<Scene> scenes = new ArrayList<>();
 
     public Chapter() {}
 
@@ -19,4 +23,13 @@ public class Chapter {
     public void setChoices(String choices) { this.choices = choices; }
     public String getEndingLead() { return endingLead; }
     public void setEndingLead(String endingLead) { this.endingLead = endingLead; }
+    public List<Scene> getScenes() { return scenes; }
+    public void setScenes(List<Scene> scenes) {
+        this.scenes = scenes == null ? new ArrayList<>() : scenes;
+    }
+
+    @Override
+    public String toString() {
+        return title == null || title.trim().isEmpty() ? "Untitled Chapter" : title;
+    }
 }
